@@ -1,2 +1,22 @@
-# ZorvynEventItems Configuration
-# No extra config needed yet - kits are managed in-memory.
+# ZorvynEventItems - Message Configuration
+# Use & for color codes. Use {id} and {count} as placeholders where shown.
+
+messages:
+  no-permission: "&cYou don't have permission to do that."
+  players-only: "&cThis command can only be used by players."
+  kit-already-exists: "&cA kit with the ID '{id}' already exists!"
+  inventory-empty: "&cYour inventory is empty! Add items before creating a kit."
+  kit-created: "&aEvent kit '{id}' created with {count} item(s)!"
+  kit-not-found: "&cNo active kit found with the ID '{id}'."
+  already-claimed: "&cYou have already claimed kit '{id}'!"
+  kit-claimed: "&aYou claimed event kit '{id}'!"
+  kit-ended-sender: "&6Kit '{id}' ended. Removed {count} item(s) from online players."
+  kit-ended-broadcast: "&cEvent kit '{id}' has ended. Items have been removed."
+  items-removed-player: "&c{count} event item(s) were removed from your inventory."
+  expired-item-removed: "&cThat event item has expired and was removed."
+  expired-items-scan: "&cSome expired event items were removed from your inventory."
+  no-active-kits: "&7No active event kits."
+  active-kits: "&6Active kits: &e{kits}"
+  usage-create: "&cUsage: /eventitem create <id>"
+  usage-claim: "&cUsage: /eventitem claim <id>"
+  usage-end: "&cUsage: /eventitem end <id>"

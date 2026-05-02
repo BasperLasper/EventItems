@@ -24,23 +24,24 @@ public class EventItemCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
                              @NotNull String label, @NotNull String[] args) {
 
+        MessageUtil msg = plugin.getMessages();
         if (args.length == 0) { sendHelp(sender); return true; }
 
         switch (args[0].toLowerCase()) {
 
             case "create" -> {
                 if (!sender.hasPermission("zorvyneventitems.create")) {
-                    sender.sendMessage(Component.text("No permission.", NamedTextColor.RED)); return true;
+                    sender.sendMessage(msg.get("no-permission")); return true;
                 }
                 if (!(sender instanceof Player player)) {
-                    sender.sendMessage(Component.text("Players only.", NamedTextColor.RED)); return true;
+                    sender.sendMessage(msg.get("players-only")); return true;
                 }
                 if (args.length < 2) {
-                    sender.sendMessage(Component.text("Usage: /eventitem create <id>", NamedTextColor.RED)); return true;
+                    sender.sendMessage(msg.get("usage-create")); return true;
                 }
                 String id = args[1].toLowerCase();
                 if (plugin.getActiveKits().containsKey(id)) {
-                    sender.sendMessage(Component.text("A kit with that ID already exists!", NamedTextColor.RED)); return true;
+                    sender.sendMessage(msg.get("kit-already-exists", "id", id)); return true;
                 }
                 List<ItemStack> items = new ArrayList<>();
                 for (ItemStack item : player.getInventory().getContents()) {
@@ -49,74 +50,65 @@ public class EventItemCommand implements CommandExecutor {
                     }
                 }
                 if (items.isEmpty()) {
-                    sender.sendMessage(Component.text("Your inventory is empty!", NamedTextColor.RED)); return true;
+                    sender.sendMessage(msg.get("inventory-empty")); return true;
                 }
                 EventKit kit = new EventKit(id, player.getName(), items);
                 plugin.getActiveKits().put(id, kit);
                 plugin.saveKits();
-                sender.sendMessage(Component.text("✦ Event kit '", NamedTextColor.GREEN)
-                        .append(Component.text(id, NamedTextColor.YELLOW))
-                        .append(Component.text("' created with " + items.size() + " item(s)!", NamedTextColor.GREEN)));
+                sender.sendMessage(msg.get("kit-created", "id", id, "count", String.valueOf(items.size())));
             }
 
             case "claim" -> {
                 if (!(sender instanceof Player player)) {
-                    sender.sendMessage(Component.text("Players only.", NamedTextColor.RED)); return true;
+                    sender.sendMessage(msg.get("players-only")); return true;
                 }
                 if (args.length < 2) {
-                    sender.sendMessage(Component.text("Usage: /eventitem claim <id>", NamedTextColor.RED)); return true;
+                    sender.sendMessage(msg.get("usage-claim")); return true;
                 }
                 String id = args[1].toLowerCase();
                 EventKit kit = plugin.getActiveKits().get(id);
                 if (kit == null) {
-                    sender.sendMessage(Component.text("No active kit with that ID.", NamedTextColor.RED)); return true;
+                    sender.sendMessage(msg.get("kit-not-found", "id", id)); return true;
                 }
                 if (kit.hasClaimed(player.getUniqueId())) {
-                    sender.sendMessage(Component.text("You have already claimed this kit!", NamedTextColor.RED)); return true;
+                    sender.sendMessage(msg.get("already-claimed", "id", id)); return true;
                 }
                 for (ItemStack item : kit.getItems()) {
                     player.getInventory().addItem(item.clone());
                 }
                 kit.addClaimed(player.getUniqueId());
                 plugin.saveKits();
-                player.sendMessage(Component.text("✦ You claimed event kit '", NamedTextColor.GREEN)
-                        .append(Component.text(id, NamedTextColor.YELLOW))
-                        .append(Component.text("'!", NamedTextColor.GREEN)));
+                player.sendMessage(msg.get("kit-claimed", "id", id));
             }
 
             case "end" -> {
                 if (!sender.hasPermission("zorvyneventitems.end")) {
-                    sender.sendMessage(Component.text("No permission.", NamedTextColor.RED)); return true;
+                    sender.sendMessage(msg.get("no-permission")); return true;
                 }
                 if (args.length < 2) {
-                    sender.sendMessage(Component.text("Usage: /eventitem end <id>", NamedTextColor.RED)); return true;
+                    sender.sendMessage(msg.get("usage-end")); return true;
                 }
                 String id = args[1].toLowerCase();
                 EventKit kit = plugin.getActiveKits().get(id);
                 if (kit == null) {
-                    sender.sendMessage(Component.text("No active kit with that ID.", NamedTextColor.RED)); return true;
+                    sender.sendMessage(msg.get("kit-not-found", "id", id)); return true;
                 }
                 int totalRemoved = 0;
                 for (Player online : Bukkit.getOnlinePlayers()) {
-                    totalRemoved += removeKitItems(online, id);
+                    totalRemoved += removeKitItems(online, id, msg);
                 }
                 plugin.getActiveKits().remove(id);
                 plugin.saveKits();
-                sender.sendMessage(Component.text("✦ Kit '", NamedTextColor.GOLD)
-                        .append(Component.text(id, NamedTextColor.YELLOW))
-                        .append(Component.text("' ended. Removed " + totalRemoved + " item(s) from online players.", NamedTextColor.GOLD)));
-                Bukkit.broadcast(Component.text("✦ Event kit '", NamedTextColor.RED)
-                        .append(Component.text(id, NamedTextColor.YELLOW))
-                        .append(Component.text("' has ended. Items removed.", NamedTextColor.RED)));
+                sender.sendMessage(msg.get("kit-ended-sender", "id", id, "count", String.valueOf(totalRemoved)));
+                Bukkit.broadcast(msg.get("kit-ended-broadcast", "id", id));
             }
 
             case "list" -> {
                 Map<String, EventKit> kits = plugin.getActiveKits();
                 if (kits.isEmpty()) {
-                    sender.sendMessage(Component.text("No active event kits.", NamedTextColor.GRAY));
+                    sender.sendMessage(msg.get("no-active-kits"));
                 } else {
-                    sender.sendMessage(Component.text("Active kits: ", NamedTextColor.GOLD)
-                            .append(Component.text(String.join(", ", kits.keySet()), NamedTextColor.YELLOW)));
+                    sender.sendMessage(msg.get("active-kits", "kits", String.join(", ", kits.keySet())));
                 }
             }
 
@@ -125,7 +117,7 @@ public class EventItemCommand implements CommandExecutor {
         return true;
     }
 
-    private int removeKitItems(Player player, String kitId) {
+    private int removeKitItems(Player player, String kitId, MessageUtil msg) {
         int count = 0;
         ItemStack[] contents = player.getInventory().getContents();
         for (int i = 0; i < contents.length; i++) {
@@ -142,7 +134,7 @@ public class EventItemCommand implements CommandExecutor {
             }
         }
         if (count > 0) {
-            player.sendMessage(Component.text("✦ " + count + " event item(s) were removed from your inventory.", NamedTextColor.RED));
+            player.sendMessage(msg.get("items-removed-player", "count", String.valueOf(count)));
         }
         return count;
     }
