@@ -1,0 +1,23 @@
+name: ZorvynEventItems
+version: 1.0.0
+main: dev.zorvyneventitems.ZorvynEventItems
+api-version: "26.1"
+description: Event kit system — create kits from inventory, let players claim them, end kits to remove items server-wide.
+author: BasperLasper
+
+commands:
+  eventitem:
+    description: Manage event item kits
+    usage: /eventitem <create|claim|end|list>
+    aliases: [ei]
+
+permissions:
+  zorvyneventitems.create:
+    description: Create event kits
+    default: op
+  zorvyneventitems.end:
+    description: End event kits
+    default: op
+  zorvyneventitems.claim:
+    description: Claim event kits
+    default: true
